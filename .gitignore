@@ -131,4 +131,6 @@ dmypy.json
 # ide
 .idea/
 
-/src/api.py
+/utils/apiKeys.py
+/utils/cache/
+/data/
