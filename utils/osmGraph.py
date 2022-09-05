@@ -73,6 +73,7 @@ class OsmGraph:
     
     @staticmethod
     def __addTrace(fig, lat, long, type='markers', label='default', size=5, color='red'):
+        print(color)
         fig.add_trace(go.Scattermapbox(
                     name=label,
                     mode=type,
@@ -149,11 +150,13 @@ class OsmGraph:
             else:
                 fig = OsmGraph.__addTrace(fig, lat, long, type='lines', label='path'+str(i))
             i += 1
-        i = 0
+        j = 0
         for label in pointDict:
             lat, long = zip(*pointDict[label])
-            fig = OsmGraph.__addTrace(fig, lat, long, type='markers', label= label, size=15, color=colorList[i])
-            i += 1
+            color = colorList[j]
+            print(color)
+            fig = OsmGraph.__addTrace(fig, lat, long, type='markers', label= label, size=15, color=color)
+            j += 1
         # getting center for plots:
         lat_center = np.mean(lat)
         long_center = np.mean(long)
