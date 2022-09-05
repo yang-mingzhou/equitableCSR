@@ -17,8 +17,6 @@ class OsmGraph:
 
     def graphToGdfs(self):
         nodes, edges = ox.graph_to_gdfs(self.graph, nodes=True, edges=True)
-        if "u" not in edges.columns:
-            edges = edges.reset_index()
         return nodes, edges
 
     def getEdges(self):
@@ -35,9 +33,66 @@ class OsmGraph:
     def shortestPath(self, origin, destination):
         return ox.distance.shortest_path(self.graph, origin, destination, weight='length')
     
-    def calculateLengthOf(path): #TODO
-        pass
-
+    
+    def calPathLength(self, nodeList):
+        result = 0
+        for i in range(len(nodeList)-1):
+            edgeLength = self.edgesGdf.loc[(nodeList[i], nodeList[i+1], 0), 'length']
+            result += edgeLength
+        return result
+    
+    def nodeList2GPSTraj(self, nodeList):
+        '''
+        traj: [[lat, lon]]
+        '''
+        traj = []
+        for i in range(len(nodeList)-1):
+            e = self.edgesGdf.loc[(nodeList[i], nodeList[i+1], 0)]
+            if 'geometry' in e:
+                xs, ys = e['geometry'].xy
+                z = list(zip(xs, ys))
+                l1 = list(list(zip(*z))[0])
+                l2 = list(list(zip(*z))[1])
+                for k in range(len(l1)):
+                    traj.append([l2[k], l1[k]])
+        return traj
+    
+    @staticmethod
+    def plotTrajList(trajList, filename):
+        '''
+        trajList: [traj]
+        '''
+        i = 0
+        for traj in trajList:
+            lat, long = zip(*traj)
+            # adding the lines joining the nodes
+            if i == 0:
+                fig = go.Figure(go.Scattermapbox(
+                    mode="lines",
+                    lon=long,
+                    lat=lat,
+                    marker={'size': 5, 'color': 'red'}))
+                
+            else:
+                fig.add_trace(go.Scattermapbox(
+                    mode="lines",
+                    lon=long,
+                    lat=lat,
+                    marker={'size': 5, 'color': 'red'}))
+            i += 1
+        # getting center for plots:
+        lat_center = np.mean(lat)
+        long_center = np.mean(long)
+        # defining the layout using mapbox_style
+        fig.update_layout(mapbox_style="stamen-terrain",
+                          mapbox_center_lat=30, mapbox_center_lon=-80)
+        fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0},
+                          mapbox={
+                              'center': {'lat': lat_center,
+                                         'lon': long_center},
+                              'zoom': 9.5})
+        plotly.offline.plot(fig, filename=filename, auto_open=False)
+        
     @staticmethod
     def plotData(pointDict, colorList,filename):
         '''
@@ -76,6 +131,8 @@ class OsmGraph:
                               'zoom': 9.5})
         plotly.offline.plot(fig, filename=filename, auto_open=False)
 
+
+    
 
 class GraphFromHmlFile(OsmGraph):
     def __init__(self, hmlAddress):
