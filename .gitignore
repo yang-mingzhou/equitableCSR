@@ -134,3 +134,4 @@ dmypy.json
 /utils/apiKeys.py
 /utils/cache/
 /data/
+/cache/
