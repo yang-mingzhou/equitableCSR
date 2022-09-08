@@ -71,6 +71,36 @@ class OsmGraph:
                     marker={'size': size, 'color': color}))
         return fig
     
+    def positionList2NodeList(self, positionList):
+        latList,  lonList = zip(*positionList)
+        nodeList,  disToNode = self.getNearestNode(latList, lonList)
+        return nodeList
+    
+    def shortestPathForEachODPari(self, originNodeList, destNodeList):
+        distanceToEachDest = {}
+        pathToEachDest = {}
+        for o in originNodeList:
+            disList = []
+            pathList = []
+            for d in destNodeList:
+                path = self.shortestPath(o, d)
+                pathList.append(path)
+                disList.append(self.calPathLength(path))
+            distanceToEachDest[o] = disList
+            pathToEachDest[o] = pathList
+        return pathToEachDest, distanceToEachDest
+    
+    @staticmethod
+    def extractPositionListFrom(dataframe, latCol = 'Latitude', longCol = 'Longitude'):
+        '''
+        return : [[lat1, lon1], ... , ]
+        '''
+        positionList = []
+        for i in dataframe.index:
+            positionList.append((dataframe.loc[i, latCol], dataframe.loc[i, longCol]))
+        return positionList
+    
+    
     @staticmethod
     def __addTrace(fig, lat, long, type='markers', label='default', size=5, color='red'):
         print(color)
